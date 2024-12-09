@@ -5,5 +5,4 @@ module "wk2-assigment" {
   region        = var.region
   data-dog-api-key = var.data-dog-api-key
   data-dog-site = var.data-dog-site
-
 }

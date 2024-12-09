@@ -1,10 +1,27 @@
+
 from locust import HttpUser, task, between
 
+
 class WebsiteUser(HttpUser):
-    wait_time = between(1, 3)  # Random wait between requests
+    wait_time = between(1, 3)
     
     @task(1)
     def load_page(self):
-        self.client.get("/")  # Replace with your endpoint
+        self.client.get("/")
 
-#   poetry run locust -f locustfile.py --host=http://34.244.237.231/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#   poetry run locust -f locustfile.py --host=http://54.171.191.190

@@ -3,7 +3,7 @@ variable "ami-id" {
 }
 
 variable "instance-type" {
-  default = "t2.micro"
+  default = "t3.micro"
 }
 
 variable "top-level-prefix" {
