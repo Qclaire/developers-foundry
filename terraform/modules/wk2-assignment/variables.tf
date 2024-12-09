@@ -9,3 +9,9 @@ variable "top-level-prefix" {
 variable "instance-type" {
   default = "t2.micro"
 }
+
+variable "region" {
+  default = "eu-west-1"
+}
+variable "data-dog-api-key" {}
+variable "data-dog-site" {}

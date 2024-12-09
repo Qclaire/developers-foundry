@@ -1,33 +1,27 @@
-resource "aws_launch_configuration" "launch-config" {
-  name_prefix     = "${var.top-level-prefix}-"
-  image_id        = data.aws_ami.ubuntu.id
-  instance_type   = var.instance-type
-  user_data       = file("user-data.sh")
-  security_groups = [aws_security_group.terramino_instance.id]
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_autoscaling_group" "as" {
-  name                 = "autoscaling"
+resource "aws_autoscaling_group" "asg" {
+  name                 = "asg"
   min_size             = 1
   max_size             = 3
   desired_capacity     = 1
-  launch_configuration = aws_launch_configuration.launch-config.name
   vpc_zone_identifier  = module.vpc.public_subnets
-
   health_check_type    = "ELB"
+  wait_for_elb_capacity = 1
+  # load_balancers = [ aws_lb.lb.name ]
+
+  launch_template {
+    name = aws_launch_template.lt.name
+    version= "$Latest"
+  }
+  
 
   tag {
     key                 = "Name"
-    value               = "${var.top-level-prefix}-autoscaling"
+    value               = "${var.top-level-prefix}-asg"
     propagate_at_launch = true
   }
 }
 
-resource "aws_autoscaling_attachment" "terramino" {
-  autoscaling_group_name = aws_autoscaling_group.as.id
-  alb_target_group_arn   = aws_lb_target_group.tg.arn
+resource "aws_autoscaling_attachment" "ata" {
+  autoscaling_group_name = aws_autoscaling_group.asg.name
+  lb_target_group_arn   = aws_lb_target_group.tg.arn
 }

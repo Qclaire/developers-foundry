@@ -2,7 +2,7 @@ resource "aws_lb" "lb" {
   name               = "${var.top-level-prefix}-lb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.terramino_lb.id]
+  security_groups    = [aws_security_group.sg_lb.id]
   subnets            = module.vpc.public_subnets
 }
 

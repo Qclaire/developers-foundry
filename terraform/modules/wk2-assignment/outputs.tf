@@ -7,3 +7,7 @@ output "availability-zones" {
 output "ami" {
     value = data.aws_ami.ubuntu.id
 }
+
+output "lb-dns" {
+    value = aws_lb.lb.dns_name
+}
