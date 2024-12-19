@@ -2,6 +2,9 @@
 services:
   flaskapp:
     image: flask-docker-app
+    build:
+      context: .
+      dockerfile: Dockerfile.flaskApp
     ports:
       - 33000:5000
   redis:
