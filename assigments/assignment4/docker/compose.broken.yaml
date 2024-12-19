@@ -1,5 +1,6 @@
 services:
   flask-app:
+    image: flask-broken-docker-app
     build:
       context: .
       dockerfile: Dockerfile.flaskApp
