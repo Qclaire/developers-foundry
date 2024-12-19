@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: flask-app
-          image: qclaire/flask-docker-app:latest
+          image: qclaire/flask-docker-app
           ports:
             - containerPort: 5000
           envFrom:
