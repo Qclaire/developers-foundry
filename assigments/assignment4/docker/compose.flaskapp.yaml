@@ -1,0 +1,12 @@
+
+services:
+  flaskapp:
+    image: flask-docker-app
+    ports:
+      - 33000:5000
+  redis:
+    image: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+
