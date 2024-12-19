@@ -19,6 +19,9 @@ spec:
           image: qclaire/flask-docker-app
           ports:
             - containerPort: 5000
-          envFrom:
-            - configMapRef:
-                name: flask-docker-app-config
+          env:
+            - name: WELCOME_MSG
+              valueFrom:
+                configMapKeyRef:
+                  name: flask-docker-app-config
+                  key: WELCOME_MSG
