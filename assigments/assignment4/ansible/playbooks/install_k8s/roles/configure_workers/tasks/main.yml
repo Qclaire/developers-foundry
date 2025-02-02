@@ -1,0 +1,10 @@
+---
+- name: Join Kubernetes worker nodes to the master (only for workers)
+  when: inventory_hostname in groups['workers']
+  command: kubeadm join {{ hostvars[groups['masters'][0]].ansible_host }}:6443 --token {{ hostvars[groups['masters'][0]].kubeadm_init.stdout_lines[0].split()[-2] }} --discovery-token-ca-cert-hash {{ hostvars[groups['masters'][0]].kubeadm_init.stdout_lines[0].split()[-1] }}
+  
+- name: Enable kubelet service
+  systemd:
+    name: kubelet
+    enabled: yes
+    state: started

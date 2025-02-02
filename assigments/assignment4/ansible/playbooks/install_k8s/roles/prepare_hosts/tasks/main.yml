@@ -1,0 +1,98 @@
+---
+### Ansible Role: prepare_k8s_host
+
+# Directory Structure:
+# prepare_k8s_host/
+# ├── tasks/
+# │   └── main.yml
+# ├── defaults/
+# │   └── main.yml
+# ├── handlers/
+# │   └── main.yml
+# └── README.md
+
+# File: tasks/main.yml
+- name: Install UFW (Debian-based systems)
+  apt:
+    name: ufw
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install firewalld (RedHat-based systems)
+  yum:
+    name: firewalld
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Disable swap temporarily (RedHat-based systems)
+  command: swapoff -a
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Disable swap temporarily (Debian-based systems)
+  command: swapoff -a
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Ensure swap is disabled permanently (RedHat-based systems)
+  lineinfile:
+    path: /etc/fstab
+    regexp: '.*swap.*'
+    state: absent
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Ensure swap is disabled permanently (Debian-based systems)
+  lineinfile:
+    path: /etc/fstab
+    regexp: '.*swap.*'
+    state: absent
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Open required Kubernetes ports (RedHat-based systems)
+  firewalld:
+    use_backend: dnf4
+    port: "{{ item.port }}/{{ item.protocol }}"
+    state: enabled
+    permanent: yes
+  loop: "{{ kubernetes_ports }}"
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Open required Kubernetes ports (Debian-based systems)
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.protocol }}"
+  loop: "{{ kubernetes_ports }}"
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Reload firewall for RedHat-based systems
+  service:
+    name: firewalld
+    use_backend: dnf4
+    state: reloaded
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Ensure UFW is enabled and reloaded (Debian-based systems)
+  command: ufw reload
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Set SELinux to permissive mode (RedHat-based systems)
+  command: setenforce 0
+  become: true
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Ensure SELinux is permissive after reboot (RedHat-based systems)
+  lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: 'SELINUX=permissive'
+  become: true
+  when: ansible_facts.os_family == "RedHat"

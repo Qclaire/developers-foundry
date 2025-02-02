@@ -1,0 +1,77 @@
+---
+- name: Check Kubernetes Requirements
+  hosts: all
+  become: yes
+  gather_facts: yes
+  tasks:
+    - name: Check if the OS is Linux
+      command: uname -s
+      register: os_version
+      changed_when: false
+    - name: Ensure OS is Linux
+      assert:
+        that:
+          - os_version.stdout == "Linux"
+        fail_msg: "This server must be running Linux."
+        success_msg: "Operating System is Linux."
+    - name: Display success message
+      debug:
+        msg: "{{ 'Operating System is Linux.' if os_version.stdout == 'Linux' else 'This server must be running Linux.' }}"
+
+    - name: Check available memory
+      command: free -m | grep Mem | awk '{print $2}'
+      register: memory_total
+      changed_when: false
+    - name: Ensure memory is sufficient
+      assert:
+        that:
+          - memory_total.stdout | int >= 2048
+        fail_msg: "Not enough memory available. Minimum of 2048 MB required."
+        success_msg: "Sufficient memory found."
+
+    - name: Check if swap is disabled
+      command: swapon --show
+      register: swap_info
+      changed_when: false
+    - name: Ensure swap is disabled
+      assert:
+        that:
+          - swap_info.stdout == ""
+        fail_msg: "Swap is enabled. Kubernetes requires swap to be disabled."
+        success_msg: "Swap is disabled."
+
+    - name: Check for required open ports
+      command: ss -tuln | grep -E '(:6443|:2379|:10250|:10255)'
+      register: port_check
+      changed_when: false
+    - name: Ensure required ports are open
+      assert:
+        that:
+          - "'6443' in port_check.stdout"
+          - "'2379' in port_check.stdout"
+          - "'10250' in port_check.stdout"
+          - "'10255' in port_check.stdout"
+        fail_msg: "Required ports are not open."
+        success_msg: "All required ports are open."
+
+    - name: Check if Docker is installed
+      command: docker --version
+      register: docker_version
+      ignore_errors: true
+    - name: Ensure Docker is installed
+      assert:
+        that:
+          - docker_version.rc == 0
+        fail_msg: "Docker is not installed. Kubernetes requires Docker."
+        success_msg: "Docker is installed."
+
+    - name: Check for systemd
+      command: ps -p 1 -o comm=
+      register: init_system
+      changed_when: false
+    - name: Ensure systemd is used
+      assert:
+        that:
+          - init_system.stdout == "systemd"
+        fail_msg: "Systemd is not in use. Kubernetes requires systemd."
+        success_msg: "Systemd is in use."

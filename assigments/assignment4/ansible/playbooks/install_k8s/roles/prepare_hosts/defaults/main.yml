@@ -1,0 +1,8 @@
+
+kubernetes_ports:
+  - { port: 6443, protocol: tcp }
+  - { port: 2379, protocol: tcp }
+  - { port: 2380, protocol: tcp }
+  - { port: 10250, protocol: tcp }
+  - { port: 10259, protocol: tcp }
+  - { port: 10257, protocol: tcp }

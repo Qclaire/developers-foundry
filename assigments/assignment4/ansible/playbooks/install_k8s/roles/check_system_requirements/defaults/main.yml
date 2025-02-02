@@ -1,0 +1,8 @@
+
+k8s_required_memory: 2048
+k8s_required_swap: 0
+k8s_required_ports:
+  - 6443
+  - 2379
+  - 10250
+  - 10255

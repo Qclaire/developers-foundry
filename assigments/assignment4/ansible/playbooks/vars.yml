@@ -1,0 +1,28 @@
+kubernetes_version: "1.32"
+kubeadm_version: "1.32.0"
+pod_network_cidr: "10.10.0.0/16"
+service_network_cidr: "10.80.0.0/16"
+node_network_cidr: "10.20.0.0/16"
+ingress_network_cidr: "10.40.0.0/16"
+cluster_infrastructure_network_cidr: "10.50.0.0/16"
+
+cluster_name: "kute-01-cluster"
+network_plugin: "calico"
+enable_ingress: true
+
+api_server_address: "10.0.0.10"
+kube_dns_ip: "10.50.0.10"
+
+node_ips:
+  - "10.0.0.11"
+  - "10.0.0.12"
+  - "10.0.0.13"
+
+node_pod_network_cidr: "10.10.0.0/24"
+
+service_ip_start: "10.80.0.100"
+service_ip_end: "10.80.0.250"
+
+network_policy_enabled: true
+dns_service_cidr: "10.50.0.0/24"
+load_balancer_ip_range: "10.40.0.0/24"

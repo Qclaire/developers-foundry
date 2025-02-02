@@ -1,0 +1,115 @@
+---
+- name: Remove existing Docker packages (RedHat)
+  dnf:
+    name:
+      - docker
+      - docker-client
+      - docker-client-latest
+      - docker-common
+      - docker-latest
+      - docker-latest-logrotate
+      - docker-logrotate
+      - docker-engine
+    state: absent
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+
+- name: Install dnf-plugins-core (RedHat)
+  dnf:
+    name: dnf-plugins-core
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+
+- name: Add Docker CE repository (RedHat)
+  dnf:
+    name: "https://download.docker.com/linux/centos/docker-ce.repo"
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+
+- name: Install Docker and dependencies (RedHat)
+  dnf:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+
+- name: Enable and start Docker service (RedHat)
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+  become: yes
+  when: ansible_facts.os_family == "RedHat"
+
+
+- name: Remove existing Docker packages (Ubuntu)
+  apt:
+    name:
+      - docker
+      - docker-engine
+      - docker.io
+      - docker-ce
+    state: absent
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+
+- name: Install dependencies (Ubuntu)
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+
+- name: Add Docker GPG key (Ubuntu)
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+
+- name: Add Docker repository (Ubuntu)
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+
+- name: Install Docker and dependencies (Ubuntu)
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  become: yes
+  when: ansible_facts.os_family == "Debian"
+
+
+- name: Enable and start Docker service (Ubuntu)
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+  become: yes
+  when: ansible_facts.os_family == "Debian"

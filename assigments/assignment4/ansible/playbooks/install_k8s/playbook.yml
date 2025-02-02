@@ -1,0 +1,30 @@
+- name: Kubernetes Installation Master Playbook
+  hosts: all
+  become: true
+  remote_user: ubuntu
+  vars_files:
+    - ../vars.yml
+  tasks:
+    - name: Check System Requirements
+      ansible.builtin.import_role:
+        name: check_system_requirements
+
+    - name: Prepare Hosts
+      ansible.builtin.import_role:
+        name: prepare_hosts
+
+    # - name: Install Docker
+    #   ansible.builtin.import_role:
+    #     name: install_docker
+
+    - name: Install Kubernetes Tools
+      ansible.builtin.import_role:
+        name: install_kubernetes
+
+    # - name: Configure Kubernetes Master Nodes
+    #   ansible.builtin.import_role:
+    #     name: configure_master
+
+    # - name: Configure Kubernetes Worker Nodes
+    #   ansible.builtin.import_role:
+    #     name: configure_workers

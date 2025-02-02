@@ -1,0 +1,128 @@
+---
+- name: Update package list (Debian-based systems)
+  apt:
+    update_cache: true
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Update package list (RedHat-based systems)
+  yum:
+    name: "*"
+    state: latest
+  become: true
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Create /etc/apt/keyrings directory if it doesn't exist
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+- name: Download and add Kubernetes APT key
+  shell: |
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/{{kubernetes_version}}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  args:
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: Install Kubernetes apt repo dependencies (Debian-based systems)
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gpg
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install Kubernetes apt report dependencies (RedHat-based systems)
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gpg
+  become: true
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Add Kubernetes APT repository to sources list
+  shell: |
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+  args:
+    creates: /etc/apt/sources.list.d/kubernetes.list
+  when: ansible_facts.os_family == "Debian"
+
+- name: Update APT package index
+  apt:
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: Add Kubernetes YUM repository
+  copy:
+    dest: /etc/yum.repos.d/kubernetes.repo
+    content: |
+      [kubernetes]
+      name=Kubernetes
+      baseurl=https://pkgs.k8s.io/core:/stable:/{{kubernetes_version}}/rpm/
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://pkgs.k8s.io/core:/stable:/{{kubernetes_version}}/rpm/repodata/repomd.xml.key
+      exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install Kubernetes components (Debian-based systems)
+  apt:
+    name: "{{ item }}={{ kubernetes_version }}"
+    state: present
+  loop:
+    - kubeadm
+    - kubelet
+    - kubectl
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install Kubernetes components (RedHat-based systems)
+  yum:
+    name: "{{ item }}-{{ kubernetes_version }}"
+    state: present
+  loop:
+    - kubeadm
+    - kubelet
+    - kubectl
+  become: true
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Mark Kubernetes packages as held (Debian-based systems)
+  apt:
+    name: "{{ item }}"
+    state: held
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+
+- name: Install contaierd runtime (Debian-based systems)
+  apt:
+    name: containerd
+    state: present
+  become: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install contaierd runtime (RedHat-based systems)
+  yum:
+    name: containerd
+    state: present
+  become: true
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Enable and start kubelet service
+  systemd:
+    name: kubelet
+    state: started
+    enabled: true
+  become: true
